@@ -1,0 +1,31 @@
+[
+    {
+      "id": 1,
+      "name": "Smartphone Ultra X",
+      "price": 799.99,
+      "image": "/images/smartphone.jpg",
+      "description": "A powerful smartphone with an amazing camera."
+    },
+    {
+      "id": 2,
+      "name": "Wireless Headphones",
+      "price": 199.99,
+      "image": "/images/headphones.jpg",
+      "description": "Noise-canceling wireless headphones with superior sound quality."
+    },
+    {
+      "id": 3,
+      "name": "Gaming Laptop",
+      "price": 1299.99,
+      "image": "/images/laptop.jpg",
+      "description": "High-performance gaming laptop with RGB keyboard."
+    },
+    {
+      "id": 4,
+      "name": "Smart Watch Pro",
+      "price": 249.99,
+      "image": "/images/smartwatch.jpg",
+      "description": "Track your fitness and notifications with this stylish smartwatch."
+    }
+  ]
+  
