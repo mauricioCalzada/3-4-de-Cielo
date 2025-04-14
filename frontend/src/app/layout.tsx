@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar";
 import "./globals.css";
 import { CartProvider } from "../context/CartContext";
 import MessageBar from "../components/MessageBar"; // Importa el nuevo componente
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
