@@ -2,76 +2,95 @@
 
 import { useCart } from "../../context/CartContext";
 import Link from "next/link";
+import { calculateBulkPrice } from "../../utils/bulkPricing";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart();
 
-  // Calculate total price
-  const totalPrice = cart.reduce((sum, product) => sum + product.price * product.quantity, 0);
+  const totalPrice = cart.reduce((sum, product) => {
+    const { total } = calculateBulkPrice(product, product.quantity);
+    return sum + total;
+  }, 0);
 
   return (
-    <main className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6 text-center text-gray-900">Shopping Cart</h1>
+    <main className="min-h-screen bg-gray-50 p-6 md:p-10">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">Your Shopping Cart</h1>
 
-      {cart.length === 0 ? (
-        <p className="text-center text-gray-600">Your cart is empty.</p>
-      ) : (
-        <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6">
-          {cart.map((product) => (
-            <div key={product.id} className="flex items-center border-b border-gray-200 py-4">
-              <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+        {cart.length === 0 ? (
+          <p className="text-center text-gray-600">Your cart is empty.</p>
+        ) : (
+          <>
+            <ul className="space-y-6">
+              {cart.map((product) => {
+                const { unitPrice, total, discountMessage, appliedDiscount } = calculateBulkPrice(
+                  product,
+                  product.quantity
+                );
 
-              {/* Product Information */}
-              <div className="ml-4 flex-1">
-                <h2 className="text-lg font-semibold text-gray-900">{product.name}</h2>
-                <p className="text-gray-800 font-medium">${product.price.toFixed(2)}</p>
+                return (
+                  <li key={product.id} className="flex gap-4 items-center border-b pb-4">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-20 h-20 object-cover rounded-md border"
+                    />
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-gray-800">{product.name}</h2>
+                      <p className="text-sm text-gray-600">${unitPrice.toFixed(2)} x {product.quantity}</p>
+                      <p className="text-gray-800 font-medium mt-1">Subtotal: ${total.toFixed(2)}</p>
+                      {appliedDiscount > 0 && (
+                        <p className="text-green-600 text-sm font-medium">{discountMessage}</p>
+                      )}
+                      {/* Cantidad */}
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          className="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 transition"
+                          onClick={() => updateQuantity(product.id, product.quantity - 1)}
+                        >
+                          -
+                        </button>
+                        <span className="font-semibold">{product.quantity}</span>
+                        <button
+                          className="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 transition"
+                          onClick={() => updateQuantity(product.id, product.quantity + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Quantity Controls */}
-                <div className="flex items-center mt-2">
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded-md font-bold hover:bg-red-700 transition-all"
-                    onClick={() => updateQuantity(product.id, product.quantity - 1)}
-                  >
-                    -
-                  </button>
-                  <span className="px-4 text-xl font-semibold text-gray-900">{product.quantity}</span>
-                  <button
-                    className="bg-green-500 text-white px-3 py-1 rounded-md font-bold hover:bg-green-700 transition-all"
-                    onClick={() => updateQuantity(product.id, product.quantity + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
+                    <button
+                      className="bg-red-500 text-white px-3 py-2 rounded-md text-sm hover:bg-red-600 transition ml-4"
+                      onClick={() => removeFromCart(product.id)}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
 
-              {/* Remove Button */}
-              <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md font-bold hover:bg-red-800 transition-all ml-4"
-                onClick={() => removeFromCart(product.id)}
-              >
-                Remove
-              </button>
+            {/* Totales */}
+            <div className="mt-8 border-t pt-6 text-right">
+              <h2 className="text-2xl font-bold text-gray-900">Total: ${totalPrice.toFixed(2)}</h2>
+              <Link href="/checkout">
+                <button className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">
+                  Proceed to Checkout
+                </button>
+              </Link>
             </div>
-          ))}
 
-          {/* Total Price Section */}
-          <div className="mt-6 text-right border-t border-gray-300 pt-4">
-            <h2 className="text-2xl font-bold text-gray-900">Total: ${totalPrice.toFixed(2)}</h2>
-            <button className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition-all">
-              Proceed to Checkout
-            </button>
-          </div>
-
-          {/* Continue Shopping Button */}
-          <div className="mt-6 text-center">
-            <Link href="/store">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-all hover:bg-blue-800">
-                Continue Shopping
-              </button>
-            </Link>
-          </div>
-        </div>
-      )}
+            <div className="mt-6 text-center">
+              <Link href="/store">
+                <button className="bg-gray-200 text-gray-800 px-6 py-2 rounded-md font-medium hover:bg-gray-300 transition">
+                  Continue Shopping
+                </button>
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
     </main>
   );
 }

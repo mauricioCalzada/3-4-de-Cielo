@@ -5,9 +5,15 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 type Product = {
   id: number;
   name: string;
-  price: number;
+  basePrice: number;
   image: string;
   quantity: number;
+};
+
+type Order = {
+  id: number;
+  date: string;
+  items: Product[];
 };
 
 type CartContextType = {
@@ -17,6 +23,8 @@ type CartContextType = {
   updateQuantity: (id: number, quantity: number) => void;
   message: string;
   showMessage: (text: string) => void;
+  orders: Order[]; // nuevo
+  saveOrder: () => void; // nuevo
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -24,6 +32,15 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Product[]>([]);
   const [message, setMessage] = useState<string>("");
+
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const storedOrders = localStorage.getItem("orders");
+    if (storedOrders) {
+      setOrders(JSON.parse(storedOrders));
+    }
+  }, []);
 
   // Cargar carrito desde localStorage al iniciar
   useEffect(() => {
@@ -70,8 +87,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const saveOrder = () => {
+    const order: Order = {
+      id: Date.now(),
+      date: new Date().toLocaleString(),
+      items: [...cart],
+    };
+
+    const updatedOrders = [...orders, order];
+    setOrders(updatedOrders);
+    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+
+    // Limpia el carrito después de guardar el pedido
+    setCart([]);
+  };
+
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, message, showMessage }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, message, showMessage, orders, saveOrder }}>
       {children}
     </CartContext.Provider>
   );
